@@ -1,0 +1,300 @@
+<%- include('./partials/header.ejs') %>
+    <!-- Page Content  -->
+    <%     if (typeof user !== 'undefined' && user !== null && user._id) { %>
+        <h2 class="mb-4"> Hi, <%= user.name %>
+        </h2>
+        <div class="row">
+            <div class="col-md-4">
+                <ul class="list-group">
+                    <% if (users.length>0) { %>
+                        <% users.forEach(user=> { %>
+                            <li class="list-group-item list-group-item-dark cursor-pointer user-list"
+                                data-id="<%= user._id %>">
+                                <img src="<%= user.image %>" alt="" srcset="" width="50px" height="50px">
+                                <span style="margin-left: 5px;">
+                                    <%= user.name %>
+                                </span>
+                                <% if (user.isOnline==true) { %>
+                                    <sub class="online-status" id="<%=user._id %>-status">Online</sub>
+                                    <% } else { %>
+                                        <sub class="offline-status" id="<%= user._id %>-status">Offline</sub>
+                                        <% } %>
+                            </li>
+                            <% }) %>
+                                <% } %>
+                </ul>
+            </div>
+            <% } %>
+                <div class="col-md-8">
+                    <h3 class="start-head">Click to Start the chat</h3>
+                    <div class="chat-section">
+                        <div class="chat-container">
+
+
+                            <!-- <div class="distance-user-chat">
+                                <p>hi</p>
+                            </div> -->
+                        </div>
+
+                        <form action="" id="chat-form">
+                            <input type="text" name="message" id="message" placeholder="Enter message" required
+                                class="border">
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </form>
+
+                    </div>
+                </div>
+        </div>
+
+        <!-- Delete Chat Modal -->
+        <div class="modal fade" id="delete-chat-model" tabindex="-1" role="dialog"
+            aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Delete Chat</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="" id="delete-chat-form">
+                        <div class="modal-body">
+                            <input type="hidden" name="id" id="delete-message-id">
+                            <p>Are you sure you want to delete the below message? ?</p>
+                            <p><b id="delete-message"></b></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Chat Modal -->
+        <div class="modal fade" id="edit-chat-model" tabindex="-1" role="dialog"
+            aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Edit Chat</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="" id="edit-chat-form">
+                        <div class="modal-body">
+                            <input type="hidden" name="id" id="edit-message-id">
+                            <input type="text" name="message" id="edit-message" required placeholder="Enter Message">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <%- include('partials/footer.ejs') %>
+
+            <script>
+                const senderId = '<%= user._id %>';
+                var receiverId;
+                const socket = io('/user-namespace', {
+                    auth: {
+                        userId: senderId
+                    }
+                });
+
+
+
+                $(document).ready(function () {
+                    $('.user-list').click(function () {
+                        const userId = $(this).attr('data-id');
+                        receiverId = userId;
+                        $('.start-head').hide();
+                        $('.chat-section').show();
+
+                        socket.emit("exitsChat", { sender_id: senderId, receiver_id: receiverId });
+                    });
+                });
+
+                // update user online status
+                socket.on("getOnlineStatus", (data) => {
+                    console.log(data);
+                    $('#' + data.userId + '-status').text('Online');
+                    $('#' + data.userId + '-status').removeClass('offline-status')
+                    $('#' + data.userId + '-status').addClass('online-status');
+                })
+
+                // update user offline status
+                socket.on("getOfflineStatus", (data) => {
+                    console.log(data);
+                    $('#' + data.userId + '-status').text('Offline');
+                    $('#' + data.userId + '-status').removeClass('online-status')
+                    $('#' + data.userId + '-status').addClass('offline-status');
+                })
+                // save-chat of user
+                $('#chat-form').submit(function (event) {
+                    event.preventDefault();
+
+                    const message = $('#message').val();
+
+                    $.ajax({
+                        url: '/save-chat',
+                        type: 'post',
+                        data: {
+                            sender_id: senderId,
+                            receiver_id: receiverId,
+                            message: message,
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.success) {
+                                console.log(res);
+                                $('#message').val('');
+                                let chatMessage = res.data.message;
+                                let html = `
+                                    <div class="current-user-chat" id="${res.data._id}">
+                               <p>`+ chatMessage + `</p>
+                               <i class="fa fa-trash" aria-hidden="true" style="color: red;" data-id="${res.data._id}"  data-toggle="modal" data-target="#delete-chat-model"></i>
+                               <i class="fa fa-edit" aria-hidden="true" style="color: red;" data-id="${res.data._id}" data-msg="${chatMessage}"  data-toggle="modal" data-target="#edit-chat-model"></i>
+                                </div>
+                                `;
+                                $('.chat-container').append(html);
+                                socket.emit('newChat', res.data);
+                                scrollChat();
+                            } else {
+                                alert(res.msg);
+                            }
+
+                        }
+                    });
+                });
+ 
+                socket.on('loadNewChat', function (data) {
+                    if (senderId == data.receiver_id && receiverId == data.sender_id) {
+                        let html = ` <div class="distance-user-chat" id="${data._id}">
+        <p>`+ data.message + `</p>
+        </div> `;
+                        $('.chat-container').append(html);
+
+                    }
+                    scrollChat();
+
+                });
+                //load old chats
+                socket.on("loadChats", function (data) {
+                    $('.chat-container').html('');
+                    const chats = data.chats;
+
+                    let html = '';
+                    chats.forEach(chat => {
+                        let addClass = '';
+                        if (chat.sender_id == senderId) {
+                            addClass = 'current-user-chat';
+                        } else {
+                            addClass = 'distance-user-chat'
+                        }
+                        html += ` 
+        <div class="${addClass}" id="${chat._id}">
+        <p>`+ chat.message + `</p>
+             `;
+                        if (chat.sender_id == senderId) {
+                            html += ` 
+            <i class="fa fa-trash" aria-hidden="true" style="color: red;" data-id="${chat._id}"  data-toggle="modal" data-target="#delete-chat-model"></i>
+            <i class="fa fa-edit" aria-hidden="true" style="color: red;" data-id="${chat._id}" data-msg="${chat.message}"  data-toggle="modal" data-target="#edit-chat-model"></i>
+                    `;
+                        }
+                        html += `</div> `;
+                    });
+                    $('.chat-container').append(html);
+                    scrollChat();
+                })
+
+                function scrollChat() {
+                    $('.chat-container').animate({
+                        scrollTop: $('.chat-container').offset().top + $('.chat-container')[0].scrollHeight
+                    }, 0);
+
+                }
+                //delete chat
+                $(document).on('click', '.fa-trash', function () {
+                    // let msg=$(this).parent('p').text();
+                    let msg = $(this).siblings('p').text();
+                    $('#delete-message').text(msg);
+                    $('#delete-message-id').val($(this).attr('data-id'));
+
+                    $('#delete-chat-form').submit(function (event) {
+                        event.preventDefault();
+                        const id = $('#delete-message-id').val()
+                        //  why not this =>   const id= $('#delete-message-id').val($(this).attr('data-id'));  
+
+
+                        $.ajax({
+                            url: '/delete-chat',
+                            type: 'POST',
+                            data: { _id: id },
+                            success: function (res) {
+                                if (res.success == true) {
+                                    $('#' + id).remove();
+                                    $('#delete-chat-model').modal('hide')
+                                    socket.emit("chatDeleted", id);
+                                } else {
+                                    alert(res.msg);
+                                }
+                            }
+                        });
+                    });
+
+                });
+
+
+                socket.on("chatMessageDeleted", function (id) {
+                    $('#' + id).remove();
+
+                });
+
+                //update chat
+                $(document).on('click', '.fa-edit', function () {
+
+                    $('#edit-message-id').val($(this).attr('data-id'));
+                    $('#edit-message').val($(this).attr('data-msg'));
+                    $('#edit-chat-form').submit(function (event) {
+                        event.preventDefault();
+                        const id = $('#edit-message-id').val()
+                        const message = $('#edit-message').val()
+                        //  why not this =>   const id= $('#delete-message-id').val($(this).attr('data-id'));  
+
+
+                        $.ajax({
+                            url: '/edit-chat',
+                            type: 'POST',
+                            data: {
+                                _id: id,
+                                message
+                            },
+                            success: function (res) {
+                                if (res.success == true) {
+                                    $('#' + id).find('p').text(message);
+                                    $('#' + id).find('.fa-edit').attr('data-msg', message);
+                                    $('#edit-chat-model').modal('hide')
+                                    socket.emit("chatUpdated", { id, message });
+                                } else {
+                                    alert(res.msg);
+                                }
+                            }
+                        });
+                    });
+
+                });
+
+                socket.on("chatMessageUpdated", function (data) {
+                    $('#' + data.id).find('p').text(data.message);
+                });
+
+
+
+            </script>
