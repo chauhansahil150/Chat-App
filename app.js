@@ -12,7 +12,7 @@ const io = require('socket.io')(http);
 const userRoute= require('./routes/userRoute');
 
 
-mongoose.connect('mongodb://127.0.0.1:27017/dynamic-chat-app')
+mongoose.connect('mongodb+srv://sahilranag123:JIVsH0JRAo8piODG@cluster0.jxotcqf.mongodb.net/DYNAMIC_CHAT?retryWrites=true&w=majority&appName=Cluster0')
     .then(() => console.log("mongodb connected"));
 
 // app.use((req, res, next) => {
@@ -104,7 +104,7 @@ unsp.on('connection', async function (socket) {
 });
 
 http.listen(3000, function () {
-    console.log('listening on port 8000');
+    console.log('listening on port 3000');
 })
 // http.listen(process.env.PORT, function () {
 //     console.log('listening on port 8000');

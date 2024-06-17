@@ -16,7 +16,7 @@ const auth= require("../middlewares/auth");
 
 //set session
 userRoute.use(session({
-    secret: process.env.SESSION_SECRET_KEY,
+    secret: "secret",
     resave: false,
     saveUninitialized: true,
 }));

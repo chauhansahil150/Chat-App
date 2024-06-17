@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head >
+  <body>
+    
+    <table>
+      <thead>
+        <tr><th><b>DATE</b></th><th><b>PRODUCT</b></th><th><b>CONSIGNOR</b></th><th><b>CONSIGNEE</b></th><th><b>DISPATCH_STATE</b></th><th><b>INVOICE_NO</b></th><th><b>INWARD_PCS</b></th><th><b>BOXES</b></th><th><b>OUTWARD_PCS</b></th><th><b>STOCK_BALANCE</b></th></tr>
+      </thead>
+      <tbody>
+        <tr><td>24/5/2024</td><td>pen</td><td>wqwqw</td><td></td><td>NA</td><td>21212</td><td>12</td><td>2</td><td>0</td><td>12</td></tr>
+        <tr><td>24/5/2024</td><td>pencil</td><td>wqwqw</td><td></td><td>NA</td><td>qw</td><td>100</td><td>16</td><td>0</td><td>100</td></tr>
+        <tr><td>24/5/2024</td><td>pen</td><td></td><td>qww</td><td>Hr</td><td>2405001</td><td>0</td><td>0</td><td>1</td><td>11</td></tr>
+        <tr><td>24/5/2024</td><td>pencil</td><td></td><td>qw</td><td>Hr</td><td>2405002</td><td>0</td><td>2</td><td>12</td><td>88</td></tr>
+        <tr><td>24/5/2024</td><td>pen</td><td></td><td>as</td><td>NA</td><td>2405003</td><td>0</td><td>0</td><td>1</td><td>10</td></tr>
+      </tbody>
+    </table>
+  
+  </body>
+</html >
